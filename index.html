@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IITM BS Data Science - CGPA Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      animation: slideUp 0.6s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #dc2626, #b91c1c, #991b1b);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+      animation: rotate 25s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .iitm-logo {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .institute-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      position: relative;
+      z-index: 1;
+      opacity: 0.95;
+      letter-spacing: 0.5px;
+    }
+
+    .program-name {
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+      opacity: 0.9;
+      font-style: italic;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.85;
+      font-weight: 300;
+      position: relative;
+      z-index: 1;
+    }
+
+    .content {
+      padding: 45px;
+    }
+
+    .info-banner {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 2px solid #f59e0b;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #92400e;
+      font-weight: 500;
+    }
+
+    .info-banner .icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      margin-bottom: 35px;
+      border: 1px solid rgba(220, 38, 38, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    }
+
+    th {
+      padding: 22px 18px;
+      font-weight: 700;
+      color: #dc2626;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
+      border-bottom: 3px solid #dc2626;
+    }
+
+    td {
+      padding: 22px 18px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: all 0.3s ease;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-25px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    tbody tr:hover {
+      background: linear-gradient(135deg, #fef2f2, #fde8e8);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(220, 38, 38, 0.1);
+    }
+
+    .subject-select, .grade-select {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 14px;
+      background: white;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dc2626' d='M6 8L0 2 1.5 0.5 6 5 10.5 0.5 12 2z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 45px;
+      font-weight: 500;
+    }
+
+    .subject-select:focus, .grade-select:focus {
+      outline: none;
+      border-color: #dc2626;
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .subject-select:disabled option, .grade-select:disabled option {
+      color: #9ca3af;
+    }
+
+    .credits-cell {
+      font-weight: 700;
+      color: #dc2626;
+      font-size: 1.15rem;
+      text-align: center;
+    }
+
+    .actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 35px;
+    }
+
+    button {
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+      box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(5, 150, 105, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 10px 18px;
+      font-size: 13px;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .result {
+      text-align: center;
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-radius: 25px;
+      padding: 40px;
+      margin-top: 25px;
+      border: 3px solid #dc2626;
+      animation: pulse 3s ease-in-out infinite alternate;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #dc2626, #b91c1c, #dc2626);
+      background-size: 200% 100%;
+      animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes pulse {
+      from {
+        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+      }
+      to {
+        box-shadow: 0 15px 40px rgba(220, 38, 38, 0.25);
+      }
+    }
+
+    .result-label {
+      font-size: 1.4rem;
+      color: #7f1d1d;
+      margin-bottom: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #cgpaResult {
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-top: 15px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .cgpa-grade {
+      font-size: 1.1rem;
+      color: #7f1d1d;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state-icon {
+      font-size: 5rem;
+      margin-bottom: 25px;
+      opacity: 0.4;
+    }
+
+    .empty-state-text {
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .empty-state-subtext {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+      }
+
+      .content {
+        padding: 25px;
+      }
+
+      .iitm-logo {
+        font-size: 2.5rem;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      .institute-name {
+        font-size: 1.1rem;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 650px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      #cgpaResult {
+        font-size: 2.8rem;
+      }
+    }
+
+    /* Loading animation */
+    .calculating {
+      pointer-events: none;
+    }
+
+    .calculating #cgpaResult {
+      animation: calculating 1.2s ease-in-out;
+    }
+
+    @keyframes calculating {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+
+    /* Hover effects for better interactivity */
+    .table-container:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(220, 38, 38, 0.12);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+    }
+
+    .footer-info {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-radius: 15px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="iitm-logo">🎓</div>
+      <div class="institute-name">Indian Institute of Technology Madras</div>
+      <div class="program-name">Bachelor of Science in Data Science and Applications</div>
+      <h1>CGPA Calculator</h1>
+      <p class="subtitle">Official grading system calculator for IITM BS Data Science program</p>
+    </div>
+    
+    <div class="content">
+      <div class="info-banner">
+        <span class="icon">ℹ️</span>
+        <strong>IITM BS Data Science Grading Scale:</strong> S(10) • A(9) • B(8) • C(7) • D(6) • E(4) • U(0)
+      </div>
+
+      <div class="table-container">
+        <table id="subjectsTable">
+          <thead>
+            <tr>
+              <th>📚 Subject Course</th>
+              <th>⚖️ Credits</th>
+              <th>🎯 Grade</th>
+              <th>⚡ Action</th>
+            </tr>
+          </thead>
+          <tbody id="subjectRows">
+            <!-- Dynamic rows here -->
+          </tbody>
+        </table>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-text">No subjects added yet</div>
+          <div class="empty-state-subtext">Click "Add Subject" to start calculating your CGPA</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="addSubjectRow()">➕ Add Subject</button>
+        <button class="btn-secondary" onclick="calculateCGPA()">🧮 Calculate CGPA</button>
+      </div>
+
+      <div class="result">
+        <div class="result-label">Your IITM BS Data Science CGPA</div>
+        <span id="cgpaResult">0.00</span>
+        <div class="cgpa-grade" id="cgpaGrade">Grade: -</div>
+      </div>
+
+      <div class="footer-info">
+        <strong>Note:</strong> This calculator is based on the official IITM BS Data Science grading system. 
+        Results are indicative and should be verified with official transcripts.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const gradeValues = {
+      "S": 10,
+      "A": 9,
+      "B": 8,
+      "C": 7,
+      "D": 6,
+      "E": 4,
+      "U": 0
+    };
+
+    const subjectsList = [
+      { name: "Mathematics for Data Science I", credits: 4 },
+      { name: "Statistics for Data Science I", credits: 4 },
+      { name: "Computational Thinking", credits: 4 },
+      { name: "English I", credits: 4 },
+      { name: "Mathematics for Data Science II", credits: 4 },
+      { name: "Statistics for Data Science II", credits: 4 },
+      { name: "Programming in Python", credits: 4 },
+      { name: "English II", credits: 4 },
+      { name: "Database Management Systems", credits: 4 },
+      { name: "Programming, Data Structures and Algorithms using Python", credits: 4 },
+      { name: "Modern Application Development I", credits: 4 },
+      { name: "PROJECT Modern Application Development I - Project", credits: 2 },
+      { name: "Programming Concepts using Java", credits: 4 },
+      { name: "Modern Application Development II", credits: 4 },
+      { name: "PROJECT Modern Application Development II - Project", credits: 2 },
+      { name: "System Commands", credits: 3 },
+      { name: "Machine Learning Foundations", credits: 4 },
+      { name: "Business Data Management", credits: 4 },
+      { name: "Machine Learning Techniques", credits: 4 },
+      { name: "Machine Learning Practice", credits: 4 },
+      { name: "Machine Learning Practice - Project", credits: 2 },
+      { name: "Tools in Data Science", credits: 3 },
+      { name: "Business Data Management - Project OPTION 1", credits: 2 },
+      { name: "Business Analytics OPTION 1", credits: 4 },
+      { name: "Introduction to Deep Learning and Generative AI OPTION 2", credits: 4 },
+      { name: "Deep Learning and Generative AI - Project OPTION 2", credits: 2 }
+    ];
+
+    let rowIdCounter = 0;
+
+    function getCGPAGrade(cgpa) {
+      if (cgpa >= 9.0) return "S Grade - Outstanding";
+      if (cgpa >= 8.0) return "A Grade - Excellent";
+      if (cgpa >= 7.0) return "B Grade - Very Good";
+      if (cgpa >= 6.0) return "C Grade - Good";
+      if (cgpa >= 5.0) return "D Grade - Average";
+      if (cgpa >= 4.0) return "E Grade - Marginal";
+      return "U Grade - Unsatisfactory";
+    }
+
+    function getSelectedSubjects() {
+      const selects = document.querySelectorAll(".subject-select");
+      return Array.from(selects).map(select => select.value);
+    }
+
+    function updateSubjectOptions() {
+      const selectedSubjects = getSelectedSubjects();
+
+      document.querySelectorAll(".subject-select").forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = `<option value="">Select Subject</option>`;
+
+        subjectsList.forEach(subject => {
+          const isSelected = selectedSubjects.includes(subject.name) && subject.name !== currentValue;
+          const option = document.createElement("option");
+          option.value = subject.name;
+          option.textContent = subject.name;
+          option.disabled = isSelected;
+          if (subject.name === currentValue) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function addSubjectRow() {
+      const tbody = document.getElementById("subjectRows");
+      const tr = document.createElement("tr");
+      const rowId = "row" + rowIdCounter++;
+
+      tr.innerHTML = `
+        <td>
+          <select class="subject-select" onchange="updateSubjectOptions()" required>
+            <option value="">Select Subject</option>
+            ${subjectsList.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join("")}
+          </select>
+        </td>
+        <td class="credits-cell">0</td>
+        <td>
+          <select class="grade-select">
+            <option value="10">S (10)</option>
+            <option value="9">A (9)</option>
+            <option value="8">B (8)</option>
+            <option value="7">C (7)</option>
+            <option value="6">D (6)</option>
+            <option value="4">E (4)</option>
+            <option value="0">U (0)</option>
+          </select>
+        </td>
+        <td>
+          <button class="btn-danger" onclick="removeSubjectRow('${rowId}')">🗑️ Remove</button>
+        </td>
+      `;
+      tr.id = rowId;
+      tbody.appendChild(tr);
+
+      tr.querySelector(".subject-select").addEventListener("change", function() {
+        const selected = this.value;
+        const subject = subjectsList.find(sub => sub.name === selected);
+        if (subject) {
+          tr.querySelector(".credits-cell").textContent = subject.credits;
+        } else {
+          tr.querySelector(".credits-cell").textContent = 0;
+        }
+        updateSubjectOptions();
+      });
+
+      updateSubjectOptions();
+    }
+
+    function removeSubjectRow(id) {
+      const row = document.getElementById(id);
+      if (row) {
+        row.remove();
+        updateSubjectOptions();
+      }
+    }
+
+    function calculateCGPA() {
+      // Add calculating animation
+      document.querySelector('.result').classList.add('calculating');
+      
+      setTimeout(() => {
+        let totalCredits = 0;
+        let weightedSum = 0;
+
+        const rows = document.querySelectorAll("#subjectRows tr");
+
+        for (const row of rows) {
+          const subjectName = row.querySelector(".subject-select").value;
+          const gradeValue = parseFloat(row.querySelector(".grade-select").value);
+
+          if (!subjectName) continue;
+
+          const subject = subjectsList.find(s => s.name === subjectName);
+          const credits = subject ? subject.credits : 0;
+
+          weightedSum += gradeValue * credits;
+          totalCredits += credits;
+        }
+
+        const cgpa = totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : "0.00";
+        const cgpaGrade = getCGPAGrade(parseFloat(cgpa));
+        
+        document.getElementById("cgpaResult").textContent = cgpa;
+        document.getElementById("cgpaGrade").textContent = `Grade: ${cgpaGrade}`;
+        
+        // Remove calculating animation
+        document.querySelector('.result').classList.remove('calculating');
+      }, 800);
+    }
+
+    // Add initial row
+    addSubjectRow();
+  </script>
+  <footer>
+    made by <a href="https://github.com/prajwalsuryawanshi/">Prajwal Suryawanshi</a>
+  </footer>
+</body>
+</html>
